@@ -1,0 +1,164 @@
+---
+title: "Final Project"
+author: "Grant Williams"
+date: "2023-11-13"
+output: html_document
+---
+
+```{r}
+
+# Import Libraries
+
+library(tidyverse)
+library(dplyr)
+library(foreign)
+library(ggplot2)
+library(MASS)
+library(Hmisc)
+library(reshape2)
+
+#Formatting From 2022 Data
+
+# data <- read_csv('data_2022.csv')
+# data <- data %>% filter((!pid7 %in% c(4,8,9))) # dropped moderate and not sure
+# data <- data %>% mutate(age = 2022 - birthyr)
+# data <- data %>% rename(media = CC22_200_1)
+# data <- data %>% select(age, gender4,educ,race,pid7,inputstate,region,media,urbancity,pew_religimp,religpew,faminc_new,child18,sexuality)
+# 1 is yes, #2 is no 
+```
+
+```{r}
+
+# Clean up data_smol
+data_smol <- read.csv("data_smol.csv")
+
+# Get rid of state
+data_smol <- data_smol[-6]
+
+#Recoding variables of interest from numbers
+data_smol <- data_smol %>%
+  mutate(gender4 = case_when(gender4 == '1' ~ 'Man',
+                             gender4 == '2' ~ 'Woman',
+                             gender4 == '3' ~ 'Other',
+                             gender4 == '4' ~ 'Other')) %>%
+  mutate(race = recode(race,
+                       '1' = 'White',
+                       '2' = 'Black',
+                       '3' = 'Hispanic',
+                       '4' = 'Asian',
+                       '5' = 'Native American',
+                       '6' = 'Two or more races',
+                       '7' = 'Other',
+                       '8' = 'Native American')) %>%
+  mutate(region = recode(region,
+                         '1' = 'Northeast',
+                         '2' = 'Midwest',
+                         '3' = 'South',
+                         '4' = 'West')) %>%
+  mutate(educ = factor(recode(educ,
+                                 '1' = 'No HS',
+                                 '2' = 'HS Graduate',
+                                 '3' = 'Some College',
+                                 '4' = '2-year',
+                                 '5' = '4-year',
+                                 '6' = 'Post Grad'), 
+                          #after recoding assign levels
+                          levels = c(
+                            'No HS',
+                            'HS Graduate',
+                            'Some College',
+                            '2-year',
+                            '4-year',
+                            'Post Grad')))%>%
+  mutate(pid7 = as.character(pid7)) %>%
+  mutate(pid7 = factor(
+    recode(pid7,
+      '1' = 'Strong Democrat',
+      '2' = 'Not Very Strong Democrat',
+      '3' = 'Lean Democrat',
+      '5' = 'Lean Republican',
+      '6' = 'Not very Strong Republican',
+      '7' = 'Strong Republican'),
+    #After recoding, we assign the order here
+    levels = c(
+      'Strong Democrat',
+      'Not Very Strong Democrat',
+      'Lean Democrat',
+      'Lean Republican',
+      'Not very Strong Republican',
+      'Strong Republican'
+    )))%>%
+mutate(urbancity = recode(urbancity,
+                         '1' = 'City',
+                         '2' = 'Suburb',
+                         '3' = 'Town',
+                         '4' = 'Rural area', 
+                         '5' = 'Other'))%>%
+mutate(pew_religimp= recode(pew_religimp,
+                         '1' = 'Very important ',
+                         '2' = 'Somewhat important',
+                         '3' = 'Not too important',
+                         '4' = 'Not at all important'))%>%
+mutate(sexuality= recode(sexuality,
+                         '1' = ' Heterosexual / straight',
+                         '2' = 'Lesbian / gay woman',
+                         '3' = 'Gay man',
+                         '4' = 'Bisexual',
+                         '5'='Other', 
+                         '6'='Prefer not to say'))%>%
+mutate(religpew = recode(religpew,
+                           '1' = 'Protestant',
+                           '2' = 'Roman Catholic',
+                           '3' = 'Mormon',
+                           '4' = 'Eastern or Greek Orthodox',
+                           '5' = 'Jewish',
+                           '6' = 'Muslim',
+                           '7' = 'Buddhist',
+                           '8' = 'Hindu',
+                           '9' = 'Atheist',
+                           '10' = 'Agnostic',
+                           '11' = 'Nothing in particular',
+                           '12' = 'Something else'))%>%
+mutate(faminc_new=recode(faminc_new,
+                      "1" = "Less than $10,000",
+                      "2" = "$10,000 - $19,999",
+                      "3" = "$20,000 - $29,999",
+                      "4" = "$30,000 - $39,999",
+                      "5" = "$40,000 - $49,999",
+                      "6" = "$50,000 - $59,999",
+                      "7" = "$60,000 - $69,999",
+                      "8" = "$70,000 - $89,999",
+                      "9" = "$80,000 - $99,999",
+                      "10" = "$100,000 - $119,999",
+                      "11" = "$120,000 - $149,999",
+                      "12" = "$150,000 - $199,999",
+                      "13" = "$200,000 - $249,999",
+                      "14" = "$250,000 - $349,999",
+                      "15" = "$350,000 - $499,999",
+                      "16" = "$500,000 or more",
+                      "97" = "Prefer not to say")) %>%
+  mutate(media = ifelse(media == 1, 1, 0)) %>%
+  mutate(child18 = ifelse(child18 == 1, 1, 0)) 
+```
+
+AMELIA SECTION
+
+```{r}
+#basic ordered logistic regression taking into account gender and sexuality  
+gender_sexuality_model<- polr(pid7 ~ gender4 + sexuality, data = data_smol, Hess=TRUE)
+
+summary(gender_sexuality_model)
+
+```
+
+DINAN SECTION
+
+```{r}
+
+```
+
+GRANT SECTION
+
+```{r}
+
+```
