@@ -161,4 +161,11 @@ GRANT SECTION
 
 ```{r}
 
+#religion and religious importance 
+
+
+
+
+# random forest prediction
+
 ```
