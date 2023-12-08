@@ -155,6 +155,16 @@ DINAN SECTION
 
 ```{r}
 
+#basic ordered logistic regression taking into account region
+region_model<- polr(pid7 ~ region, data = data_smol, Hess=TRUE)
+ 
+summary(region_model)
+
+#basic ordered logistic regression taking into account region and urbancity 
+region_urban_model<- polr(pid7 ~ region + urbancity, data = data_smol, Hess=TRUE)
+
+summary(region_urban_model)
+
 ```
 
 GRANT SECTION
