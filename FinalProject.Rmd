@@ -178,5 +178,34 @@ GRANT SECTION
 
 # random forest prediction
 
+library(randomForest)
+
+# Load the Iris dataset
+
+rows_with_na <- which(rowSums(is.na(data_smol)) > 0)
+
+data_smol[rows_with_na, ]
+
+# Split the dataset into training and testing sets
+set.seed(139) 
+train_indices <- sample(1:nrow(data_smol), 0.7 * nrow(data_smol))  # 70% for training
+train_data <- data_smol[train_indices, ]
+test_data <- data_smol[-train_indices, ]
+
+# Create a random forest model
+rf_model <- randomForest(pid7 ~ ., data = train_data, ntree = 500)
+
+data_smol 
+
+# Make predictions on the test set
+predictions <- predict(rf_model, test_data)
+
+# Evaluate the model
+conf_matrix <- table(predictions, test_data$Species)
+print(conf_matrix)
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+cat("Accuracy:", accuracy, "\n")
+
+
 
 ```
