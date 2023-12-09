@@ -213,12 +213,55 @@ plot_grid(plotlist = plots_list, ncol = 6)
 AMELIA SECTION
 
 ```{r}
-#basic ordered logistic regression taking into account gender and sexuality  
-gender_sexuality_model<- polr(pid7 ~ gender4 + sexuality, data = data_smol, Hess=TRUE)
+#exploratory visualizations
+# Bar Plot: Gender Distribution Across Political Parties
+ggplot(data_smol, aes(x = pid7, fill = gender4)) +
+  geom_bar(position = "stack", stat = "count") +
+  labs(title = "Gender Distribution Across Political Parties",
+       x = "Political Party",
+       y = "Count") +
+  scale_fill_manual(values = c("darkgreen", "orange", "purple")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-summary(gender_sexuality_model)
+# Bar Plot: Gender Distribution Across Political Parties with Flipped Colors
+ggplot(data_smol, aes(x = gender4, fill = pid7)) +
+  geom_bar(position = "fill", stat = "count") +
+  labs(title = " Spread of Political Leanings by Gender",
+       x = "Gender",
+       y = "Proportion") +
+  scale_fill_manual(values = rev(c("darkred", "lightcoral", "indianred1", "lightblue", "cornflowerblue", "darkblue")),
+                    name = "Political Party",
+                    labels = c('Strong Democrat', 'Not Very Strong Democrat', 'Lean Democrat',
+                               'Lean Republican', 'Not Very Strong Republican', 'Strong Republican')) +
+  theme(axis.text.x = element_text(angle = 0, hjust = 0.5))  # Adjust the angle for better readability
 
 ```
+```{r}
+#Baseline gender model:
+gender4_model<- polr(pid7 ~ gender4, data = data_smol, Hess=TRUE)
+#store summary
+summary_gender4_model<-summary(gender4_model)
+# store table
+(ctable_baseline_gender <- coef(summary(gender4_model)))
+## calculate and store p values
+baseline_gender_p <- pnorm(abs(ctable_baseline_gender[, "t value"]), lower.tail = FALSE) * 2
+## combined table
+(ctable_baseline_gender <- cbind(ctable_baseline_gender, "p value" = baseline_gender_p))
+
+```
+```{r}
+#gender and  with race model
+race_gender_model<- polr(pid7 ~ gender4*race, data = data_smol, Hess=TRUE)
+#store summary
+summary_race_gender_model<-summary(race_gender_model)
+# store table
+(ctable_race_gender <- coef(summary(race_gender_model)))
+## calculate and store p values
+race_gender_p <- pnorm(abs(ctable_race_gender[, "t value"]), lower.tail = FALSE) * 2
+## combined table
+(ctable_race_gender <- cbind(ctable_race_gender, "p value" = race_gender_p))
+```
+
 
 DINAN SECTION
 
@@ -272,6 +315,8 @@ GRANT SECTION
 ```{r}
 
 #religion 
+
+unique(data_smol$religpew)
 
 religion_model <- polr(pid7 ~ religpew, data = data_smol, Hess=TRUE)
 
