@@ -196,6 +196,22 @@ plot_grid(plotlist = plots_list, ncol = 6)
 
 ```{r}
 
+#Age 
+
+ggplot(data_smol, aes(x = age)) +
+    geom_histogram(fill = "skyblue", color = "black") +
+    labs(title = "Histogram of Age in Non-NA rows", x = "") +
+    theme_minimal() 
+
+ggplot(rows_with_na, aes(x = age)) +
+    geom_histogram(fill = "skyblue", color = "black") +
+    labs(title = "Histogram of Age in NA rows", x = "") +
+    theme_minimal() 
+
+```
+
+```{r}
+
 #Plot the rows_with_na values
 
 
@@ -315,8 +331,6 @@ GRANT SECTION
 ```{r}
 
 #religion 
-
-unique(data_smol$religpew)
 
 religion_model <- polr(pid7 ~ religpew, data = data_smol, Hess=TRUE)
 
