@@ -137,8 +137,77 @@ mutate(faminc_new=recode(faminc_new,
                       "15" = "$350,000 - $499,999",
                       "16" = "$500,000 or more",
                       "97" = "Prefer not to say")) %>%
+  mutate(faminc_new = factor(faminc_new, levels = c(
+    "Less than $10,000",
+    "$10,000 - $19,999",
+    "$20,000 - $29,999",
+    "$30,000 - $39,999",
+    "$40,000 - $49,999",
+    "$50,000 - $59,999",
+    "$60,000 - $69,999",
+    "$70,000 - $89,999",
+    "$80,000 - $99,999",
+    "$100,000 - $119,999",
+    "$120,000 - $149,999",
+    "$150,000 - $199,999",
+    "$200,000 - $249,999",
+    "$250,000 - $349,999",
+    "$350,000 - $499,999",
+    "$500,000 or more",
+    "Prefer not to say"
+  ))) %>%
   mutate(media = ifelse(media == 1, 1, 0)) %>%
   mutate(child18 = ifelse(child18 == 1, 1, 0)) 
+```
+
+```{r}
+
+# How many NAs do we have 
+
+rows_with_na <- data_smol[which(rowSums(is.na(data_smol)) > 0),]
+
+data_smol <- na.omit(data_smol)
+
+```
+
+```{r}
+#Plot the data_smol values
+
+library(cowplot)
+
+# Function to create bar plots for categorical variables using ggplot2
+plot_categorical_ggplot <- function(data, col) {
+  ggplot(data, aes(x = factor(data[[col]]))) +
+    geom_bar(fill = "skyblue", color = "black") +
+    labs(title = col, x = "") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, size = 5, hjust = 1))
+}
+
+# Create a list of ggplot objects
+plots_list <- lapply(names(data_smol)[-which(names(data_smol) == "age")], function(col) {
+  plot_categorical_ggplot(data_smol, col)
+})
+
+# Combine the plots into a grid
+plot_grid(plotlist = plots_list, ncol = 6)
+
+```
+
+```{r}
+
+#Plot the rows_with_na values
+
+
+# Create a list of ggplot objects
+plots_list <- lapply(names(rows_with_na)[-which(names(rows_with_na) == "age")], function(col) {
+  plot_categorical_ggplot(rows_with_na, col)
+})
+
+# Combine the plots into a grid
+plot_grid(plotlist = plots_list, ncol = 6)
+
+
 ```
 
 AMELIA SECTION
@@ -165,52 +234,95 @@ region_urban_model<- polr(pid7 ~ region + urbancity, data = data_smol, Hess=TRUE
 
 summary(region_urban_model)
 
-pid7_mapping <- c('Strong Democrat' = 1,
-                  'Not Very Strong Democrat' = 2,
-                  'Lean Democrat' = 3,
-                  'Lean Republican' = 4,
-                  'Not very Strong Republican' = 5,
-                  'Strong Republican' = 6)
-
-data_smol_dinan <- data_smol %>%
-  mutate(pid7_num = as.numeric(recode_factor(pid7, !!!pid7_mapping)))
-
-
-sf <- function(y) {
-  c('Y>=1' = qlogis(mean(y >= 1)),
-    'Y>=2' = qlogis(mean(y >= 2)),
-    'Y>=3' = qlogis(mean(y >= 3)), 
-    'Y>=4' = qlogis(mean(y >= 4)),
-    'Y>=5' = qlogis(mean(y >= 5)))
-}
-
-#testing assumptions for region 
-s <- with(data_smol_dinan, summary(as.numeric(pid7_num) ~ region, fun=sf))
-# glm(I(as.numeric(pid7_num) >= 2) ~ region, family="binomial", data = data_smol_dinan)
-# glm(I(as.numeric(pid7_num) >= 3) ~ region, family="binomial", data = data_smol_dinan)
-# glm(I(as.numeric(pid7_num) >= 4) ~ region, family="binomial", data = data_smol_dinan)
-# glm(I(as.numeric(pid7_num) >= 5) ~ region, family="binomial", data = data_smol_dinan)
-
-plot(s, which=1:3, pch=1:3, xlab='logit', main=' ', xlim=range(s[,3:4]))
-
-
-############# checking assumption of second model 
-s_2 <- with(data_smol_dinan, summary(as.numeric(pid7_num) ~ region + urbancity, fun=sf))
-plot(s_2, which=1:3, pch=1:3, xlab='logit', main=' ', xlim=range(s[,3:4]))
-
-
-
 ```
 
 GRANT SECTION
 
 ```{r}
 
-#religion and religious importance 
+#religion 
 
+religion_model <- polr(pid7 ~ religpew, data = data_smol, Hess=TRUE)
 
+summary(religion_model)
 
+# Extracting coefficient information
+coef_summary <- summary(religion_model)$coef[1:11,]
 
-# random forest prediction
+# Names of the religions
+religions <- sub("religpew", "", rownames(coef_summary))
+coefficients <- as.numeric(coef_summary[, 1])
+se <- as.numeric(coef_summary[, 2])
 
+df <- data.frame(Religion = religions, Coefficient = coefficients, SE = se)
+
+df$Religion <- reorder(df$Religion, df$Coefficient)
+
+ggplot(df, aes(x = Coefficient, y = Religion)) +
+  geom_point(size = 3, color = "blue", fill = "blue") +
+  geom_errorbarh(aes(xmin = Coefficient - 2 * SE, xmax = Coefficient + 2 * SE), height = 0.2, color = "black") +
+  labs(title = "Dot and Whisker Plot of Coefficients",
+       x = "Coefficient Value") +
+  theme_minimal()
+```
+
+```{r}
+
+#religious importance 
+
+relig_imp_model <- polr(pid7 ~ pew_religimp, data = data_smol, Hess=TRUE)
+
+summary(relig_imp_model)
+
+# Extracting coefficient information
+coef_summary <- summary(relig_imp_model)$coef[1:3,]
+
+# Names of the religions
+religions <- sub("pew_religimp", "", rownames(coef_summary))
+religions <- sub("religpew", "", religions)
+coefficients <- as.numeric(coef_summary[, 1])
+se <- as.numeric(coef_summary[, 2])
+
+df <- data.frame(Religion = religions, Coefficient = coefficients, SE = se)
+
+df$Religion <- reorder(df$Religion, df$Coefficient)
+
+df <- df %>% mutate(Importance = case_when('Not at all important' %in% Religion ~ 'Not important',
+                                           'Not too important' %in% Religion ~ 'Not important',
+                                           'Not at all important' %in% Religion ~ 'Not important')) 
+
+ggplot(df, aes(x = Coefficient, y = Religion)) +
+  geom_point(size = 3, color = "blue", fill = "blue") +
+  geom_errorbarh(aes(xmin = Coefficient - 2 * SE, xmax = Coefficient + 2 * SE), height = 0.2, color = "black") +
+  labs(title = "Dot and Whisker Plot of Coefficients",
+       x = "Coefficient Value") +
+  theme_minimal()
+
+```
+
+```{r}
+library(randomForest)
+
+# Split the dataset into training and testing sets
+set.seed(139) 
+train_indices <- sample(1:nrow(data_smol), 0.7 * nrow(data_smol))  # 70% for training
+train_data <- data_smol[train_indices, ]
+test_data <- data_smol[-train_indices, ]
+
+# Create a random forest model
+rf_model <- randomForest(pid7 ~ ., data = train_data, ntree = 100, importance = TRUE)
+
+# Extract variable importance from the random forest model
+var_importance <- importance(rf_model)
+print(var_importance)
+varImpPlot(rf_model)
+
+# Make predictions on the test set
+predictions <- predict(rf_model, test_data)
+
+# Evaluate the model
+conf_matrix <- table(predictions, test_data$pid7)
+print(conf_matrix)
+accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
+cat("Accuracy:", accuracy, "\n")
 ```
