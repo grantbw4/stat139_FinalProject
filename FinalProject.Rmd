@@ -137,6 +137,25 @@ mutate(faminc_new=recode(faminc_new,
                       "15" = "$350,000 - $499,999",
                       "16" = "$500,000 or more",
                       "97" = "Prefer not to say")) %>%
+  mutate(faminc_new = factor(faminc_new, levels = c(
+    "Less than $10,000",
+    "$10,000 - $19,999",
+    "$20,000 - $29,999",
+    "$30,000 - $39,999",
+    "$40,000 - $49,999",
+    "$50,000 - $59,999",
+    "$60,000 - $69,999",
+    "$70,000 - $89,999",
+    "$80,000 - $99,999",
+    "$100,000 - $119,999",
+    "$120,000 - $149,999",
+    "$150,000 - $199,999",
+    "$200,000 - $249,999",
+    "$250,000 - $349,999",
+    "$350,000 - $499,999",
+    "$500,000 or more",
+    "Prefer not to say"
+  ))) %>%
   mutate(media = ifelse(media == 1, 1, 0)) %>%
   mutate(child18 = ifelse(child18 == 1, 1, 0)) 
 ```
@@ -150,9 +169,10 @@ rows_with_na <- data_smol[which(rowSums(is.na(data_smol)) > 0),]
 data_smol <- na.omit(data_smol)
 
 ```
+
 ```{r}
-# Assuming data_smol is your data frame
-library(ggplot2)
+#Plot the data_smol values
+
 library(cowplot)
 
 # Function to create bar plots for categorical variables using ggplot2
@@ -161,7 +181,7 @@ plot_categorical_ggplot <- function(data, col) {
     geom_bar(fill = "skyblue", color = "black") +
     labs(title = col, x = "") +
     theme_minimal() +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1))
+    theme(axis.text.x = element_text(angle = 45, size = 5, hjust = 1))
 }
 
 # Create a list of ggplot objects
@@ -172,8 +192,21 @@ plots_list <- lapply(names(data_smol)[-which(names(data_smol) == "age")], functi
 # Combine the plots into a grid
 plot_grid(plotlist = plots_list, ncol = 6)
 
-# You can also save the combined plot if needed
-# ggsave("combined_plot.png", plot = last_plot(), width = 12, height = 9)
+```
+
+```{r}
+
+#Plot the rows_with_na values
+
+
+# Create a list of ggplot objects
+plots_list <- lapply(names(rows_with_na)[-which(names(rows_with_na) == "age")], function(col) {
+  plot_categorical_ggplot(rows_with_na, col)
+})
+
+# Combine the plots into a grid
+plot_grid(plotlist = plots_list, ncol = 6)
+
 
 ```
 
@@ -207,20 +240,68 @@ GRANT SECTION
 
 ```{r}
 
-#religion and religious importance 
+#religion 
 
+religion_model <- polr(pid7 ~ religpew, data = data_smol, Hess=TRUE)
 
+summary(religion_model)
 
+# Extracting coefficient information
+coef_summary <- summary(religion_model)$coef[1:11,]
 
-# random forest prediction
+# Names of the religions
+religions <- sub("religpew", "", rownames(coef_summary))
+coefficients <- as.numeric(coef_summary[, 1])
+se <- as.numeric(coef_summary[, 2])
 
+df <- data.frame(Religion = religions, Coefficient = coefficients, SE = se)
+
+df$Religion <- reorder(df$Religion, df$Coefficient)
+
+ggplot(df, aes(x = Coefficient, y = Religion)) +
+  geom_point(size = 3, color = "blue", fill = "blue") +
+  geom_errorbarh(aes(xmin = Coefficient - 2 * SE, xmax = Coefficient + 2 * SE), height = 0.2, color = "black") +
+  labs(title = "Dot and Whisker Plot of Coefficients",
+       x = "Coefficient Value") +
+  theme_minimal()
+```
+
+```{r}
+
+#religious importance 
+
+relig_imp_model <- polr(pid7 ~ pew_religimp, data = data_smol, Hess=TRUE)
+
+summary(relig_imp_model)
+
+# Extracting coefficient information
+coef_summary <- summary(relig_imp_model)$coef[1:3,]
+
+# Names of the religions
+religions <- sub("pew_religimp", "", rownames(coef_summary))
+religions <- sub("religpew", "", religions)
+coefficients <- as.numeric(coef_summary[, 1])
+se <- as.numeric(coef_summary[, 2])
+
+df <- data.frame(Religion = religions, Coefficient = coefficients, SE = se)
+
+df$Religion <- reorder(df$Religion, df$Coefficient)
+
+df <- df %>% mutate(Importance = case_when('Not at all important' %in% Religion ~ 'Not important',
+                                           'Not too important' %in% Religion ~ 'Not important',
+                                           'Not at all important' %in% Religion ~ 'Not important')) 
+
+ggplot(df, aes(x = Coefficient, y = Religion)) +
+  geom_point(size = 3, color = "blue", fill = "blue") +
+  geom_errorbarh(aes(xmin = Coefficient - 2 * SE, xmax = Coefficient + 2 * SE), height = 0.2, color = "black") +
+  labs(title = "Dot and Whisker Plot of Coefficients",
+       x = "Coefficient Value") +
+  theme_minimal()
+
+```
+
+```{r}
 library(randomForest)
-
-# Load the Iris dataset
-
-rows_with_na <- which(rowSums(is.na(data_smol)) > 0)
-
-data_smol[rows_with_na, ]
 
 # Split the dataset into training and testing sets
 set.seed(139) 
@@ -229,19 +310,19 @@ train_data <- data_smol[train_indices, ]
 test_data <- data_smol[-train_indices, ]
 
 # Create a random forest model
-rf_model <- randomForest(pid7 ~ ., data = train_data, ntree = 500)
+rf_model <- randomForest(pid7 ~ ., data = train_data, ntree = 100, importance = TRUE)
 
-data_smol 
+# Extract variable importance from the random forest model
+var_importance <- importance(rf_model)
+print(var_importance)
+varImpPlot(rf_model)
 
 # Make predictions on the test set
 predictions <- predict(rf_model, test_data)
 
 # Evaluate the model
-conf_matrix <- table(predictions, test_data$Species)
+conf_matrix <- table(predictions, test_data$pid7)
 print(conf_matrix)
 accuracy <- sum(diag(conf_matrix)) / sum(conf_matrix)
 cat("Accuracy:", accuracy, "\n")
-
-
-
 ```
