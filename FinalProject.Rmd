@@ -141,6 +141,39 @@ mutate(faminc_new=recode(faminc_new,
   mutate(child18 = ifelse(child18 == 1, 1, 0)) 
 ```
 
+```{r}
+
+# How many NAs do we have 
+
+rows_with_na <- data_smol[which(rowSums(is.na(data_smol)) > 0),]
+
+data_smol <- na.omit(data_smol)
+
+```
+```{r}
+
+#Visually Inspect if the missingness is at random or nah 
+
+# Function to create bar plots for categorical variables
+plot_categorical <- function(data, col) {
+  barplot(table(data[[col]]), main = col, col = "skyblue", border = "black", las = 2)
+}
+
+# Set up a layout for the plots
+par(mfrow = c(3, 4))  # Adjust the layout based on the number of categorical variables
+
+# Apply the function to each categorical variable
+for (col in names(data_smol)) {
+  if (!is.numeric(data_smol[[col]])) {
+    plot_categorical(data_smol, col)
+  }
+}
+
+# Reset the plotting layout to default
+par(mfrow = c(1, 1))
+
+```
+
 AMELIA SECTION
 
 ```{r}
