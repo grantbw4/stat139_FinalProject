@@ -154,7 +154,7 @@ summary(gender_sexuality_model)
 DINAN SECTION
 
 ```{r}
-
+ 
 #basic ordered logistic regression taking into account region
 region_model<- polr(pid7 ~ region, data = data_smol, Hess=TRUE)
  
