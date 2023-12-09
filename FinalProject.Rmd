@@ -151,26 +151,29 @@ data_smol <- na.omit(data_smol)
 
 ```
 ```{r}
+# Assuming data_smol is your data frame
+library(ggplot2)
+library(cowplot)
 
-#Visually Inspect if the missingness is at random or nah 
-
-# Function to create bar plots for categorical variables
-plot_categorical <- function(data, col) {
-  barplot(table(data[[col]]), main = col, col = "skyblue", border = "black", las = 2)
+# Function to create bar plots for categorical variables using ggplot2
+plot_categorical_ggplot <- function(data, col) {
+  ggplot(data, aes(x = factor(data[[col]]))) +
+    geom_bar(fill = "skyblue", color = "black") +
+    labs(title = col, x = "") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))
 }
 
-# Set up a layout for the plots
-par(mfrow = c(3, 4))  # Adjust the layout based on the number of categorical variables
+# Create a list of ggplot objects
+plots_list <- lapply(names(data_smol)[-which(names(data_smol) == "age")], function(col) {
+  plot_categorical_ggplot(data_smol, col)
+})
 
-# Apply the function to each categorical variable
-for (col in names(data_smol)) {
-  if (!is.numeric(data_smol[[col]])) {
-    plot_categorical(data_smol, col)
-  }
-}
+# Combine the plots into a grid
+plot_grid(plotlist = plots_list, ncol = 6)
 
-# Reset the plotting layout to default
-par(mfrow = c(1, 1))
+# You can also save the combined plot if needed
+# ggsave("combined_plot.png", plot = last_plot(), width = 12, height = 9)
 
 ```
 
