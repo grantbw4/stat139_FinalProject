@@ -243,7 +243,7 @@ pid7_mapping <- c('Strong Democrat' = 1,
                   'Not very Strong Republican' = 5,
                   'Strong Republican' = 6)
 
-data_smol <- data_smol %>%
+data_smol_dinan <- data_smol %>%
   mutate(pid7_num = as.numeric(recode_factor(pid7, !!!pid7_mapping)))
 
 
@@ -256,12 +256,12 @@ sf <- function(y) {
 }
 
 #testing assumptions for region 
-s_region <- with(data_smol, summary(as.numeric(pid7_num) ~ region, fun=sf))
+s_region <- with(data_smol_dinan, summary(as.numeric(pid7_num) ~ region, fun=sf))
 
 plot(s_region, which=1:3, pch=1:3, xlab='logit', main=' ', xlim=range(s[,3:4]))
 
 #testing assumptions for region + urbancity 
-s_region_city<- with(data_smol, summary(as.numeric(pid7_num) ~ region + urbancity, fun=sf))
+s_region_city<- with(data_smol_dinan, summary(as.numeric(pid7_num) ~ region + urbancity, fun=sf))
 
 plot(s_region_city, which=1:3, pch=1:3, xlab='logit', main=' ', xlim=range(s[,3:4]))
 
