@@ -256,9 +256,9 @@ sf <- function(y) {
 }
 
 #testing assumptions for region 
-s_region <- with(data_smol_dinan, summary(as.numeric(pid7_num) ~ region, fun=sf))
+s <- with(data_smol_dinan, summary(as.numeric(pid7_num) ~ region, fun=sf))
 
-plot(s_region, which=1:3, pch=1:3, xlab='logit', main=' ', xlim=range(s[,3:4]))
+plot(s, which=1:3, pch=1:3, xlab='logit', main=' ', xlim=range(s[,3:4]))
 
 #testing assumptions for region + urbancity 
 s_region_city<- with(data_smol_dinan, summary(as.numeric(pid7_num) ~ region + urbancity, fun=sf))
