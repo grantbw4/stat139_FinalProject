@@ -226,18 +226,33 @@ plot_grid(plotlist = plots_list, ncol = 6)
 
 ```
 
+```{r}
+
+# Bar Plot
+
+names <- colnames(data_smol)
+
+for (i in 1:length(names(data_smol))) {
+  plot <- ggplot(data_smol, aes(x = !!sym(names(data_smol)[i]), fill = pid7)) +
+    geom_bar(position = "fill", stat = "count") +
+    labs(title = paste("Spread of Political Leanings by", names(data_smol)[i]),
+         x = names(data_smol)[i],
+         y = "Proportion") +
+    scale_fill_manual(values = rev(c("darkred", "lightcoral", "indianred1", "lightblue", "cornflowerblue", "darkblue")),
+                      name = "Political Party",
+                      labels = c('Strong Democrat', 'Not Very Strong Democrat', 'Lean Democrat',
+                                 'Lean Republican', 'Not Very Strong Republican', 'Strong Republican')) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 0.5, vjust = .5))
+  
+  print(plot)
+}
+
+
+```
+
 AMELIA SECTION
 
 ```{r}
-#exploratory visualizations
-# Bar Plot: Gender Distribution Across Political Parties
-ggplot(data_smol, aes(x = pid7, fill = gender4)) +
-  geom_bar(position = "stack", stat = "count") +
-  labs(title = "Gender Distribution Across Political Parties",
-       x = "Political Party",
-       y = "Count") +
-  scale_fill_manual(values = c("darkgreen", "orange", "purple")) +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 # Bar Plot: Gender Distribution Across Political Parties with Flipped Colors
 ggplot(data_smol, aes(x = gender4, fill = pid7)) +
@@ -252,6 +267,7 @@ ggplot(data_smol, aes(x = gender4, fill = pid7)) +
   theme(axis.text.x = element_text(angle = 0, hjust = 0.5))  # Adjust the angle for better readability
 
 ```
+
 ```{r}
 #Baseline gender model:
 gender4_model<- polr(pid7 ~ gender4, data = data_smol, Hess=TRUE)
