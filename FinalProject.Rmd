@@ -303,9 +303,7 @@ sf <- function(y) {
 
 #testing assumptions for gender baseline
 gender_baseline <- with(data_smol_dinan, summary(as.numeric(pid7_num) ~ gender4, fun=sf))
-
-plot(gender_baseline, which=1:5, pch=1:5, xlab='logit', main=' ', xlim=range(s[,3:4]))
-
+plot(gender_baseline, which=1:5, pch=1:5, xlab='logit', main=' ', xlim=range(gender_baseline[,3:6]))
 
 ```
 ```{r}
@@ -321,9 +319,9 @@ race_gender_p <- pnorm(abs(ctable_race_gender[, "t value"]), lower.tail = FALSE)
 (ctable_race_gender <- cbind(ctable_race_gender, "p value" = race_gender_p))
 
 #testing assumptions for gender + race
-s_gender_race<- with(data_smol_dinan, summary(as.numeric(pid7_num) ~ gender4 + race, fun=sf))
+s_gender_race<- with(data_smol_dinan, summary(as.numeric(pid7_num) ~ gender4* race, fun=sf))
 
-plot(s_gender_race, which=1:5, pch=1:5, xlab='logit', main=' ', xlim=range(s[,3:4]))
+plot(s_gender_race, which=1:5, pch=1:5, xlab='logit', main=' ', xlim=range(s_gender_race[,3:6]))
 
 ```
 
