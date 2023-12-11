@@ -372,39 +372,6 @@ ggplot(df, aes(x = Coefficient, y = Religion)) +
   theme_minimal()
 ```
 
-```{r}
-
-#religious importance 
-
-relig_imp_model <- polr(pid7 ~ pew_religimp, data = data_smol, Hess=TRUE)
-
-summary(relig_imp_model)
-
-# Extracting coefficient information
-coef_summary <- summary(relig_imp_model)$coef[1:3,]
-
-# Names of the religions
-religions <- sub("pew_religimp", "", rownames(coef_summary))
-religions <- sub("religpew", "", religions)
-coefficients <- as.numeric(coef_summary[, 1])
-se <- as.numeric(coef_summary[, 2])
-
-df <- data.frame(Religion = religions, Coefficient = coefficients, SE = se)
-
-df$Religion <- reorder(df$Religion, df$Coefficient)
-
-df <- df %>% mutate(Importance = case_when('Not at all important' %in% Religion ~ 'Not important',
-                                           'Not too important' %in% Religion ~ 'Not important',
-                                           'Not at all important' %in% Religion ~ 'Not important')) 
-
-ggplot(df, aes(x = Coefficient, y = Religion)) +
-  geom_point(size = 3, color = "blue", fill = "blue") +
-  geom_errorbarh(aes(xmin = Coefficient - 2 * SE, xmax = Coefficient + 2 * SE), height = 0.2, color = "black") +
-  labs(title = "Dot and Whisker Plot of Coefficients",
-       x = "Coefficient Value") +
-  theme_minimal()
-
-```
 
 ```{r}
 library(randomForest)
