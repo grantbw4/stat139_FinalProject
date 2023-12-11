@@ -238,7 +238,7 @@ for (i in 1:length(names(data_smol))) {
     labs(title = paste("Spread of Political Leanings by", names(data_smol)[i]),
          x = names(data_smol)[i],
          y = "Proportion") +
-    scale_fill_manual(values = rev(c("darkred", "lightcoral", "indianred1", "lightblue", "cornflowerblue", "darkblue")),
+    scale_fill_manual(values = rev(c("darkred",  "red1", "lightcoral", "lightblue", "cornflowerblue", "darkblue")),
                       name = "Political Party",
                       labels = c('Strong Democrat', 'Not Very Strong Democrat', 'Lean Democrat',
                                  'Lean Republican', 'Not Very Strong Republican', 'Strong Republican')) +
