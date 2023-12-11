@@ -280,6 +280,33 @@ baseline_gender_p <- pnorm(abs(ctable_baseline_gender[, "t value"]), lower.tail 
 ## combined table
 (ctable_baseline_gender <- cbind(ctable_baseline_gender, "p value" = baseline_gender_p))
 
+#checking_assumptions
+
+pid7_mapping <- c('Strong Democrat' = 1,
+                  'Not Very Strong Democrat' = 2,
+                  'Lean Democrat' = 3,
+                  'Lean Republican' = 4,
+                  'Not very Strong Republican' = 5,
+                  'Strong Republican' = 6)
+
+data_smol_dinan <- data_smol %>%
+  mutate(pid7_num = as.numeric(recode_factor(pid7, !!!pid7_mapping)))
+
+
+sf <- function(y) {
+  c('Y>=1' = qlogis(mean(y >= 1)),
+    'Y>=2' = qlogis(mean(y >= 2)),
+    'Y>=3' = qlogis(mean(y >= 3)), 
+    'Y>=4' = qlogis(mean(y >= 4)),
+    'Y>=5' = qlogis(mean(y >= 5)))
+}
+
+#testing assumptions for gender baseline
+gender_baseline <- with(data_smol_dinan, summary(as.numeric(pid7_num) ~ gender4, fun=sf))
+
+plot(gender_baseline, which=1:5, pch=1:5, xlab='logit', main=' ', xlim=range(s[,3:4]))
+
+
 ```
 ```{r}
 #gender and  with race model
@@ -292,6 +319,12 @@ summary_race_gender_model<-summary(race_gender_model)
 race_gender_p <- pnorm(abs(ctable_race_gender[, "t value"]), lower.tail = FALSE) * 2
 ## combined table
 (ctable_race_gender <- cbind(ctable_race_gender, "p value" = race_gender_p))
+
+#testing assumptions for gender + race
+s_gender_race<- with(data_smol_dinan, summary(as.numeric(pid7_num) ~ gender4 + race, fun=sf))
+
+plot(s_gender_race, which=1:5, pch=1:5, xlab='logit', main=' ', xlim=range(s[,3:4]))
+
 ```
 
 
